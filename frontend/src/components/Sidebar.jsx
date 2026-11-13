@@ -1,7 +1,16 @@
 
 import React from 'react'
+import API from '../services/api'
+import { useState } from 'react'
 
 const Sidebar = () => {
+  const [file, setFile]  =useState("")
+  const upload = async()=>{
+ await API.post("/api/documents", file)
+ console.log(file);
+ 
+
+  }
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-[#111318] p-4 text-white">
 
@@ -51,13 +60,15 @@ const Sidebar = () => {
     htmlFor="document-upload"
     className="flex w-full cursor-pointer items-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-500"
   >
-    <span className="text-lg">+</span>
+    <span className="text-lg" onClick={upload}>+</span>
     Upload Documents
   </label>
 
   <input
     id="document-upload"
     type="file"
+    value={file}
+readOnly
     accept=".pdf,application/pdf"
     multiple
     className="hidden"

@@ -2,15 +2,18 @@ import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
 import { supabase } from "./config/supabase.js"
+import documentRoutes from "./routes/documentRoutes.js";
 import { authenticateUser } from "./middleware/authMiddleware.js";
 dotenv.config()
 const app = express()
+const PORT = process.env.PORT || 5000
+
 app.use(cors({
     origin: "http://localhost:5173"
 }))
 app.use(express.json())
+app.use("/api/documents", documentRoutes);
 
-const PORT = process.env.PORT || 5000
 
 app.get("/",(req,res)=>{
     res.json({

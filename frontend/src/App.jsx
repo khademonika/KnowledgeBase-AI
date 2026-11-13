@@ -4,17 +4,33 @@ import Sidebar from "./components/Sidebar";
 import Input from "./components/Input";
 import Output from "./components/Output";
 import { useEffect } from "react";
-import { API } from "./services/api";
+import API  from "./services/api";
+import { supabase } from "./lib/supabase";
 
 export default function App() {
     const { user, loading, logout } = useAuth();
+    
 useEffect(()=>{
-  async  function  fetch(){
-   const data =  await API.get("/api/health")
-console.log(data.data.message);
+const testProtectedAPI = async () => {
+  try {
+    const response = await API.get("/api/protected");
+const { data, error } = await supabase.auth.getSession();
 
+console.log("Error:", error);
+console.log("Session exists:", !!data.session);
+console.log("Token exists:", !!data.session?.access_token);
+console.log(data.session?.access_token);
+
+    console.log(response.data);
+  } catch (error) {
+    console.error(
+      "Authentication failed:",
+      error.response?.data || error.message
+    );
   }
-fetch()
+};
+
+testProtectedAPI()
 },[])
     if (loading) {
         return (
