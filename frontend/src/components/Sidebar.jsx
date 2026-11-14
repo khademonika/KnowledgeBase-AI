@@ -2,15 +2,43 @@
 import React from 'react'
 import API from '../services/api'
 import { useState } from 'react'
-
+import { uploadDocument } from "../services/documentService";
 const Sidebar = () => {
   const [file, setFile]  =useState("")
-  const upload = async()=>{
- await API.post("/api/documents", file)
- console.log(file);
- 
+  const [uploading, setUploading] = useState(false);
+const [uploadMessage, setUploadMessage] = useState("");
 
+  const handleFileChange = async (event) => {
+  const file = event.target.files[0];
+
+  if (!file) return;
+
+  if (file.type !== "application/pdf") {
+    setUploadMessage("Please select a PDF file.");
+    return;
   }
+
+  try {
+    setUploading(true);
+    setUploadMessage("");
+
+    const response = await uploadDocument(file);
+
+    setUploadMessage(response.message);
+    console.log("Uploaded document:", response.document);
+
+  } catch (error) {
+    console.error("Upload failed:", error);
+
+    setUploadMessage(
+      error.response?.data?.message || "Upload failed."
+    );
+
+  } finally {
+    setUploading(false);
+    event.target.value = "";
+  }
+};
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-white/10 bg-[#111318] p-4 text-white">
 
@@ -55,24 +83,27 @@ const Sidebar = () => {
     
 {/* Bottom section */}
 <div className="border-t border-white/10 pt-4">
-
+{uploadMessage && (
+  <p className="text-sm text-gray-400">
+    {uploadMessage}
+  </p>
+)}
   <label
     htmlFor="document-upload"
     className="flex w-full cursor-pointer items-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-500"
   >
-    <span className="text-lg" onClick={upload}>+</span>
-    Upload Documents
+    <span className="text-lg" >+</span>
+    {uploading ? "Uploading..." : "Upload Documents"}
   </label>
 
   <input
-    id="document-upload"
-    type="file"
-    value={file}
-readOnly
-    accept=".pdf,application/pdf"
-    multiple
-    className="hidden"
-  />
+  id="document-upload"
+  type="file"
+  accept=".pdf,application/pdf"
+  onChange={handleFileChange}
+  disabled={uploading}
+  className="hidden"
+/>
 
   <p className="mt-3 px-2 text-xs text-gray-500">
     Upload PDFs to build your knowledge base.
