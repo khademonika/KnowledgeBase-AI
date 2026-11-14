@@ -1,7 +1,7 @@
 
 import { searchSimilarChunks } from "../rag/retrievalService.js";
 import { generateAnswer } from "../rag/generationService.js";
-
+import { generateAnswerStream } from "../rag/generationService.js";
 export const chatWithDocuments = async (req, res) => {
   try {
     const { question, documentId } = req.body;
@@ -58,5 +58,91 @@ console.log("\nGENERATED ANSWER:", answer);
     return res.status(500).json({
       message: "Failed to generate answer"
     });
+  }
+};
+
+
+
+export const streamChatWithDocuments = async (req, res) => {
+  let clientDisconnected = false;
+
+  req.on("close", () => {
+    if (!res.writableEnded) {
+      clientDisconnected = true;
+    }
+  });
+
+  try {
+    const { question, documentId } = req.body;
+
+    if (!question || !question.trim()) {
+      return res.status(400).json({
+        message: "Please provide a question"
+      });
+    }
+
+    // 1. Retrieve relevant document chunks
+    const chunks = await searchSimilarChunks({
+      query: question,
+      supabaseClient: req.supabase,
+      documentId: documentId || null,
+      matchCount: 5,
+      matchThreshold: 0.35
+    });
+
+    if (clientDisconnected) return;
+
+    // 2. Configure Server-Sent Events
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache, no-transform");
+    res.setHeader("Connection", "keep-alive");
+
+    res.flushHeaders?.();
+
+    // 3. Send retrieved source information
+    res.write(
+      `event: sources\ndata: ${JSON.stringify(
+        chunks.map((chunk) => ({
+          documentId: chunk.document_id,
+          chunkId: chunk.chunk_id,
+          chunkIndex: chunk.chunk_index,
+          similarity: chunk.similarity
+        }))
+      )}\n\n`
+    );
+
+    // 4. Generate and stream the answer
+    for await (const token of generateAnswerStream(question, chunks)) {
+      if (clientDisconnected) return;
+
+      res.write(
+        `event: token\ndata: ${JSON.stringify({ token })}\n\n`
+      );
+    }
+
+    // 5. Notify frontend that generation is complete
+    if (!clientDisconnected) {
+      res.write("event: done\ndata: {}\n\n");
+      res.end();
+    }
+
+  } catch (error) {
+    console.error("Streaming chat error:", error);
+
+    if (!res.headersSent) {
+      return res.status(500).json({
+        message: "Failed to generate answer"
+      });
+    }
+
+    if (!clientDisconnected && !res.writableEnded) {
+      res.write(
+        `event: error\ndata: ${JSON.stringify({
+          message: "Failed to generate answer"
+        })}\n\n`
+      );
+
+      res.end();
+    }
   }
 };
