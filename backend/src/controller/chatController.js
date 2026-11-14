@@ -98,19 +98,33 @@ export const streamChatWithDocuments = async (req, res) => {
     res.setHeader("Connection", "keep-alive");
 
     res.flushHeaders?.();
+    const documentIds = [
+  ...new Set(chunks.map((chunk) => chunk.document_id))
+];
+
+const { data: documents, error: documentsError } =
+  await req.supabase
+    .from("documents")
+    .select("id, filename")
+    .in("id", documentIds);
+
+if (documentsError) throw documentsError;
+
+const documentMap = new Map(
+  documents.map((doc) => [doc.id, doc.filename])
+);
 
     // 3. Send retrieved source information
-    res.write(
-      `event: sources\ndata: ${JSON.stringify(
-        chunks.map((chunk) => ({
-          documentId: chunk.document_id,
-          chunkId: chunk.chunk_id,
-          chunkIndex: chunk.chunk_index,
-          similarity: chunk.similarity
-        }))
-      )}\n\n`
-    );
-
+res.write(`event: sources
+data: ${JSON.stringify(
+  chunks.map((chunk) => ({
+    documentId: chunk.document_id,
+    documentName: documentMap.get(chunk.document_id),
+    chunkId: chunk.chunk_id,
+    chunkIndex: chunk.chunk_index,
+    similarity: chunk.similarity
+  }))
+)}\n\n`);
     // 4. Generate and stream the answer
     for await (const token of generateAnswerStream(question, chunks)) {
       if (clientDisconnected) return;

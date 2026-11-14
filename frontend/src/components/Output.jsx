@@ -1,4 +1,5 @@
-
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 const Output = ({ messages = [] }) => {
   if (messages.length === 0) {
     return (
@@ -56,29 +57,59 @@ const Output = ({ messages = [] }) => {
                   : "border border-gray-200 bg-white text-gray-800 shadow-sm"
               }`}
             >
-              <p className="whitespace-pre-wrap text-sm leading-7">
-               {message.content}
-
-{message.role === "assistant" &&
-  message.status === "thinking" && (
-    <span className="animate-pulse text-gray-400">
-      Thinking...
-    </span>
+    <div className="text-sm leading-7">
+  {message.role === "assistant" ? (
+    <div className="prose prose-sm max-w-none break-words">
+      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+        {message.content}
+      </ReactMarkdown>
+    </div>
+  ) : (
+    <p className="whitespace-pre-wrap">
+      {message.content}
+    </p>
   )}
 
-{message.role === "assistant" &&
-  message.status === "error" && (
-    <span className="text-red-500">
-      Something went wrong.
-    </span>
-  )}
-              </p>
+  {message.role === "assistant" &&
+    message.status === "thinking" && (
+      <span className="animate-pulse text-gray-400">
+        Thinking...
+      </span>
+    )}
 
-              {message.role === "assistant" && message.sources?.length > 0 && (
-                <p className="mt-4 border-t border-gray-100 pt-3 text-xs text-gray-500">
-                  Retrieved {message.sources.length} relevant document passages.
-                </p>
-              )}
+  {message.role === "assistant" &&
+    message.status === "error" && (
+      <span className="text-red-500">
+        Something went wrong.
+      </span>
+    )}
+</div>
+          {message.role === "assistant" &&
+  message.sources?.length > 0 && (
+    <details className="mt-4 border-t border-gray-200 pt-3">
+      <summary className="cursor-pointer text-sm font-medium text-gray-600">
+        Sources ({message.sources.length})
+      </summary>
+
+      <div className="mt-3 space-y-2">
+        {message.sources.map((source) => (
+          <div
+            key={source.chunkId}
+            className="rounded-lg bg-gray-100 p-3"
+          >
+            <p className="text-sm font-medium text-gray-800">
+              {source.documentName}
+            </p>
+
+            <p className="mt-1 text-xs text-gray-500">
+              Chunk {source.chunkIndex} · Similarity:{" "}
+              {(source.similarity * 100).toFixed(1)}%
+            </p>
+          </div>
+        ))}
+      </div>
+    </details>
+  )}
             </div>
           </div>
         ))}
