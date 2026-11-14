@@ -1,6 +1,8 @@
 import express from "express"
 import dotenv from "dotenv"
 import cors from "cors"
+import searchRoutes from "./routes/searchRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 import { supabase } from "./config/supabase.js"
 import documentRoutes from "./routes/documentRoutes.js";
 import { authenticateUser } from "./middleware/authMiddleware.js";
@@ -13,7 +15,8 @@ app.use(cors({
 }))
 app.use(express.json())
 app.use("/api/documents", documentRoutes);
-
+app.use("/api/search", searchRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.get("/",(req,res)=>{
     res.json({

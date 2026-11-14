@@ -90,7 +90,7 @@ const [uploadMessage, setUploadMessage] = useState("");
 )}
   <label
     htmlFor="document-upload"
-    className="flex w-full cursor-pointer items-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-500"
+    className="flex w-full cursor-pointer  items-center gap-3 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-500"
   >
     <span className="text-lg" >+</span>
     {uploading ? "Uploading..." : "Upload Documents"}
