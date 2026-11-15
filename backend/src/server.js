@@ -6,6 +6,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import { supabase } from "./config/supabase.js"
 import documentRoutes from "./routes/documentRoutes.js";
 import { authenticateUser } from "./middleware/authMiddleware.js";
+import conversationRoutes from "./routes/conversationRoutes.js";
 dotenv.config()
 const app = express()
 const PORT = process.env.PORT || 5000
@@ -17,6 +18,7 @@ app.use(express.json())
 app.use("/api/documents", documentRoutes);
 app.use("/api/search", searchRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/conversations", conversationRoutes);
 
 app.get("/",(req,res)=>{
     res.json({

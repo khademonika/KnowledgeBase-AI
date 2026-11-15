@@ -122,7 +122,9 @@ data: ${JSON.stringify(
     documentName: documentMap.get(chunk.document_id),
     chunkId: chunk.chunk_id,
     chunkIndex: chunk.chunk_index,
-    similarity: chunk.similarity
+   
+    similarity: chunk.similarity,
+     content: chunk.content.slice(0, 250)
   }))
 )}\n\n`);
     // 4. Generate and stream the answer
