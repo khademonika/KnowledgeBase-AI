@@ -169,6 +169,10 @@ const handleSelectConversation = async (conversationId) => {
       setIsStreaming(false);
     }
   };
+  const handleNewChat = () => {
+  setMessages([]);
+  setActiveConversationId(null);
+};
 
   if (loading) {
     return (
@@ -186,7 +190,8 @@ const handleSelectConversation = async (conversationId) => {
     <div className="flex h-screen overflow-hidden">
       <Sidebar conversations={conversations}
         activeConversationId={activeConversationId}
-          onSelectConversation={handleSelectConversation} />
+          onSelectConversation={handleSelectConversation} 
+           onNewChat={handleNewChat}/>
 
       <main className="flex min-w-0 flex-1 flex-col">
         <div className="flex justify-end p-3">

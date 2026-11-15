@@ -3,7 +3,7 @@ import React from 'react'
 import API from '../services/api'
 import { useState } from 'react'
 import { uploadDocument } from "../services/documentService";
-const Sidebar = ({ conversations = [], activeConversationId ,onSelectConversation}) => {
+const Sidebar = ({ conversations = [], activeConversationId ,onSelectConversation,onNewChat}) => {
   const [file, setFile]  =useState("")
   const [uploading, setUploading] = useState(false);
 const [uploadMessage, setUploadMessage] = useState("");
@@ -53,7 +53,9 @@ const [uploadMessage, setUploadMessage] = useState("");
       </div>
 
       {/* New Chat */}
-      <button className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium transition hover:bg-blue-500">
+      <button 
+      onClick={onNewChat}
+      className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium transition hover:bg-blue-500">
         <span className="text-lg">+</span>
         New Chat
       </button>
