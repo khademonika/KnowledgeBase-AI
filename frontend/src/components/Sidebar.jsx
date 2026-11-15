@@ -3,7 +3,7 @@ import React from 'react'
 import API from '../services/api'
 import { useState } from 'react'
 import { uploadDocument } from "../services/documentService";
-const Sidebar = () => {
+const Sidebar = ({ conversations = [], activeConversationId ,onSelectConversation}) => {
   const [file, setFile]  =useState("")
   const [uploading, setUploading] = useState(false);
 const [uploadMessage, setUploadMessage] = useState("");
@@ -59,26 +59,34 @@ const [uploadMessage, setUploadMessage] = useState("");
       </button>
 
       {/* History */}
-      <div className="mt-8 flex-1">
-        <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-          Recent Chats
-        </p>
+  {/* History */}
+<div className="mt-8 flex-1 overflow-y-auto">
+  <p className="mb-3 px-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+    Recent Chats
+  </p>
 
-        <div className="space-y-1">
-          <button className="w-full rounded-lg bg-white/10 px-3 py-2.5 text-left text-sm text-white">
-            What is React?
-          </button>
-
-          <button className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-gray-400 transition hover:bg-white/5 hover:text-white">
-            Explain authentication
-          </button>
-
-          <button className="w-full rounded-lg px-3 py-2.5 text-left text-sm text-gray-400 transition hover:bg-white/5 hover:text-white">
-            Database indexing
-          </button>
-        </div>
-      </div>
-
+  <div className="space-y-1">
+    {conversations.length === 0 ? (
+      <p className="px-3 py-2 text-sm text-gray-500">
+        No conversations yet.
+      </p>
+    ) : (
+      conversations.map((conversation) => (
+        <button
+        onClick={() => onSelectConversation(conversation.id)}
+          key={conversation.id}
+          className={`w-full truncate rounded-lg px-3 py-2.5 text-left text-sm transition ${
+            activeConversationId === conversation.id
+              ? "bg-white/10 text-white"
+              : "text-gray-400 hover:bg-white/5 hover:text-white"
+          }`}
+        >
+          {conversation.title}
+        </button>
+      ))
+    )}
+  </div>
+</div>
       {/* Bottom section */}
     
 {/* Bottom section */}
