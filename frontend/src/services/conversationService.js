@@ -41,3 +41,12 @@ export const getMessages = async (conversationId) => {
 
   return data.messages;
 };
+
+// Delete a conversation
+export const deleteConversation = async (conversationId) => {
+  const { data } = await API.delete(
+    `/api/conversations/${conversationId}`
+  );
+
+  return data;
+};

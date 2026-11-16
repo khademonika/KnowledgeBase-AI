@@ -135,3 +135,30 @@ export const getMessages = async (req, res) => {
     });
   }
 };
+
+export const deleteConversation = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+
+    const { data, error } = await req.supabase
+      .from("conversations")
+      .delete()
+      .eq("id", conversationId)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.status(200).json({
+      message: "Conversation deleted successfully",
+      conversation: data
+    });
+
+  } catch (error) {
+    console.error("Delete conversation error:", error);
+
+    return res.status(500).json({
+      message: "Failed to delete conversation"
+    });
+  }
+};

@@ -10,7 +10,8 @@ import {
   getConversations,
   createConversation,
   saveMessage,
-  getMessages
+  getMessages,
+  deleteConversation
 
 } from "./services/conversationService";
 export default function App() {
@@ -20,45 +21,45 @@ export default function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
-useEffect(() => {
-  if (!user) return;
+  useEffect(() => {
+    if (!user) return;
 
-  const loadConversations = async () => {
-    try {
-      const data = await getConversations();
+    const loadConversations = async () => {
+      try {
+        const data = await getConversations();
 
-      setConversations(data);
+        setConversations(data);
 
-      // Restore the latest conversation
-      if (data.length > 0) {
-        const latestConversation = data[0];
+        // Restore the latest conversation
+        if (data.length > 0) {
+          const latestConversation = data[0];
 
-        setActiveConversationId(latestConversation.id);
+          setActiveConversationId(latestConversation.id);
 
-        const previousMessages = await getMessages(
-          latestConversation.id
-        );
+          const previousMessages = await getMessages(
+            latestConversation.id
+          );
 
-        setMessages(previousMessages);
+          setMessages(previousMessages);
+        }
+      } catch (error) {
+        console.error("Failed to restore conversations:", error);
       }
+    };
+
+    loadConversations();
+  }, [user]);
+  const handleSelectConversation = async (conversationId) => {
+    try {
+      const data = await getMessages(conversationId);
+
+      setMessages(data);
+      setActiveConversationId(conversationId);
+
     } catch (error) {
-      console.error("Failed to restore conversations:", error);
+      console.error("Failed to load messages:", error);
     }
   };
-
-  loadConversations();
-}, [user]);
-const handleSelectConversation = async (conversationId) => {
-  try {
-    const data = await getMessages(conversationId);
-
-    setMessages(data);
-    setActiveConversationId(conversationId);
-
-  } catch (error) {
-    console.error("Failed to load messages:", error);
-  }
-};
   const handleSendMessage = async (question) => {
     if (!question.trim() || isStreaming) return;
     let conversationId = activeConversationId;
@@ -170,9 +171,26 @@ const handleSelectConversation = async (conversationId) => {
     }
   };
   const handleNewChat = () => {
-  setMessages([]);
-  setActiveConversationId(null);
-};
+    setMessages([]);
+    setActiveConversationId(null);
+  };
+  const handleDeleteConversation = async (conversationId) => {
+    try {
+      await deleteConversation(conversationId);
+
+      setConversations((prev) =>
+        prev.filter((conversation) => conversation.id !== conversationId)
+      );
+
+      if (activeConversationId === conversationId) {
+        setMessages([]);
+        setActiveConversationId(null);
+      }
+
+    } catch (error) {
+      console.error("Failed to delete conversation:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -190,8 +208,9 @@ const handleSelectConversation = async (conversationId) => {
     <div className="flex h-screen overflow-hidden">
       <Sidebar conversations={conversations}
         activeConversationId={activeConversationId}
-          onSelectConversation={handleSelectConversation} 
-           onNewChat={handleNewChat}/>
+        onSelectConversation={handleSelectConversation}
+        onNewChat={handleNewChat}
+         onDeleteConversation={handleDeleteConversation} />
 
       <main className="flex min-w-0 flex-1 flex-col">
         <div className="flex justify-end p-3">
