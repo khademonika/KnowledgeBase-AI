@@ -12,7 +12,7 @@ const app = express()
 const PORT = process.env.PORT || 5000
 
 app.use(cors({
-    origin: "http://localhost:5173"
+    origin: "https://knowledge-base-ai-six.vercel.app/"
 }))
 app.use(express.json())
 app.use("/api/documents", documentRoutes);
