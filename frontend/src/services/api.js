@@ -44,7 +44,7 @@ export const streamChatWithDocuments = async (
   }
 
   // 2. Send the request to the streaming endpoint
-  const response = await fetch(`${import.meta.env.VITE_API_URL}/api/chat/stream`, {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}api/chat/stream`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
