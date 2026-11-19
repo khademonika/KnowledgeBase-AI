@@ -199,3 +199,59 @@ export const getUserDocuments = async (req, res) => {
     });
   }
 }
+
+
+
+
+export const deleteDocument = async (req, res) => {
+  try {
+    const { documentId } = req.params;
+
+    // 1. Find the document belonging to the authenticated user
+    const { data: document, error: fetchError } = await req.supabase
+      .from("documents")
+      .select("id, storage_path")
+      .eq("id", documentId)
+      .single();
+
+    if (fetchError || !document) {
+      return res.status(404).json({
+        message: "Document not found"
+      });
+    }
+
+    // 2. Delete the actual PDF from Supabase Storage
+    const { error: storageError } = await req.supabase
+      .storage
+      .from("documents")
+      .remove([document.storage_path]);
+
+    if (storageError) {
+      throw storageError;
+    }
+
+    // 3. Delete document metadata from PostgreSQL
+    const { error: databaseError } = await req.supabase
+      .from("documents")
+      .delete()
+      .eq("id", documentId);
+
+    if (databaseError) {
+      throw databaseError;
+    }
+
+    // document_chunks are deleted automatically
+    // because of ON DELETE CASCADE
+
+    return res.status(200).json({
+      message: "Document deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("Delete document error:", error);
+
+    return res.status(500).json({
+      message: "Failed to delete document"
+    });
+  }
+};
